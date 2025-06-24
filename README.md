@@ -38,7 +38,7 @@ To use RepoKit, you'll need a GitHub Personal Access Token with the following sc
 3. **Select Scopes**: Ensure these are checked:
    - ✅ `repo` (Full control of private repositories)
    - ✅ `delete_repo` (Delete repositories) 
-   - ✅ `user` (Read user profile data)
+   - ✅ `user` (Read user profile data for design only) 
 
 4. **Generate & Copy**: Click "Generate token" and copy the token immediately
 
@@ -138,17 +138,13 @@ RepoKit/
 ### GitHub Pages
 1. Fork this repository
 2. Enable GitHub Pages in repository settings
-3. Access via `https://yourusername.github.io/repokit`
+3. Access via `https://09sychic.github.io/repokit`
 
 ### Local Usage
 1. Download `index.html`
 2. Open in any modern web browser
 3. Works offline after initial load
 
-### Other Platforms
-- **Netlify**: Drag and drop `index.html`
-- **Vercel**: Deploy from GitHub repository
-- **Any Web Host**: Upload `index.html` file
 
 ## 🔄 API Rate Limits
 
@@ -189,7 +185,7 @@ MIT License - Feel free to use, modify, and distribute.
 
 **RepoKit** is a side project by **Drae**
 
-- 🧑‍💻 **GitHub**: [@09sychic](https://github.com/09sychic)
+- 🧑‍* *GitHub**: [@09sychic](https://github.com/09sychic)
 - 💬 **Discord**: `@drae`
 - 🛠️ **Icons**: [Octicons](https://primer.style/octicons) & [Heroicons](https://heroicons.com)
 - 🎨 **Inspiration**: GitHub's clean design language
@@ -204,14 +200,6 @@ Found a bug or want a feature?
 - Submit a pull request
 - Suggest improvements
 
-## 📈 Roadmap
-
-- [ ] Export functionality (JSON, CSV)
-- [ ] Repository statistics dashboard  
-- [ ] Advanced filtering options
-- [ ] Batch operation history
-- [ ] Dark/light theme toggle
-- [ ] Keyboard shortcuts
 
 ---
 
