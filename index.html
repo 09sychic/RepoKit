@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RepoKit — GitHub Token Toolbox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'github': {
+                            50: '#f6f8fa',
+                            100: '#eaeef2',
+                            200: '#d0d7de',
+                            300: '#afb8c1',
+                            400: '#8c959f',
+                            500: '#6e7781',
+                            600: '#57606a',
+                            700: '#424a53',
+                            800: '#32383f',
+                            900: '#24292f',
+                            950: '#0d1117'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f0f6fc'><path d='M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z'/></svg>">
+</head>
+<body class="font-inter bg-github-950 text-gray-100 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <header class="py-8 border-b border-github-800">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mb-2">
+                    🛠️ RepoKit
+                </h1>
+                <p class="text-xl text-gray-400">GitHub Token Toolbox</p>
+            </div>
+        </header>
+
+        <!-- Token Setup -->
+        <div id="tokenSection" class="mt-8">
+            <div class="max-w-2xl mx-auto bg-github-900 border border-github-700 rounded-xl p-8 shadow-2xl">
+                <h2 class="text-2xl font-semibold mb-4 text-center">Connect Your GitHub Account</h2>
+                <p class="text-gray-400 mb-6 text-center">
+                    Enter your GitHub Personal Access Token to manage your repositories.
+                    <a href="https://github.com/settings/tokens/new?scopes=repo,delete_repo,user&description=RepoKit%20Token" 
+                       target="_blank" 
+                       class="text-blue-400 hover:text-blue-300 ml-2 inline-flex items-center">
+                        Generate token →
+                    </a>
+                </p>
+                
+                <div class="space-y-4">
+                    <div class="flex gap-3">
+                        <input type="password" 
+                               id="tokenInput" 
+                               class="flex-1 px-4 py-3 bg-github-800 border border-github-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                               placeholder="ghp_your_token_here" />
+                        <button onclick="connectToken()" 
+                                class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200">
+                            Connect
+                        </button>
+                        <button onclick="clearToken()" 
+                                class="px-6 py-3 bg-github-700 hover:bg-github-600 text-white font-medium rounded-lg border border-github-600 transition-colors duration-200">
+                            Clear
+                        </button>
+                    </div>
+                    
+                    <div id="userInfo" class="hidden p-4 bg-github-800 rounded-lg border border-github-600">
+                        <div class="flex items-center gap-4">
+                            <img id="userAvatar" class="w-12 h-12 rounded-full border-2 border-blue-500" />
+                            <div>
+                                <h3 id="userName" class="font-semibold text-white"></h3>
+                                <p id="userStats" class="text-sm text-gray-400"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="bg-github-900 border border-github-700 rounded-xl p-8 text-center max-w-sm mx-4">
+                <div class="animate-spin w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <h3 class="text-lg font-semibold mb-2">Loading your repositories...</h3>
+                <p class="text-gray-400">This may take a moment</p>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="hidden mt-8 pb-12">
+            <!-- Stats Header -->
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 p-6 bg-github-900 border border-github-700 rounded-xl">
+                <div>
+                    <h2 class="text-2xl font-semibold mb-2">Repository Manager</h2>
+                    <p class="text-gray-400">Select a tool to manage your repositories</p>
+                </div>
+                <div class="flex gap-6 mt-4 lg:mt-0">
+                    <div class="text-center">
+                        <div id="totalRepos" class="text-2xl font-bold text-blue-400">0</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wide">Total</div>
+                    </div>
+                    <div class="text-center">
+                        <div id="publicRepos" class="text-2xl font-bold text-green-400">0</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wide">Public</div>
+                    </div>
+                    <div class="text-center">
+                        <div id="privateRepos" class="text-2xl font-bold text-yellow-400">0</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wide">Private</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools Grid -->
+            <div class="grid lg:grid-cols-4 gap-6">
+                <!-- Sidebar Navigation -->
+                <div class="lg:col-span-1">
+                    <nav class="bg-github-900 border border-github-700 rounded-xl p-4 sticky top-4">
+                        <h3 class="font-semibold mb-4 text-gray-300">Tools</h3>
+                        <ul class="space-y-2">
+                            <li><button onclick="switchTool('nuker')" data-tool="nuker" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium bg-blue-600 text-white">🔥 Repo Nuker</button></li>
+                            <li><button onclick="switchTool('archiver')" data-tool="archiver" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium text-gray-400 hover:text-white hover:bg-github-700">📦 Repo Archiver</button></li>
+                            <li><button onclick="switchTool('star-sweeper')" data-tool="star-sweeper" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium text-gray-400 hover:text-white hover:bg-github-700">🌟 Star Sweeper</button></li>
+                            <li><button onclick="switchTool('issue-wiper')" data-tool="issue-wiper" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium text-gray-400 hover:text-white hover:bg-github-700">🐛 Issue Wiper</button></li>
+                            <li><button onclick="switchTool('fork-sweeper')" data-tool="fork-sweeper" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium text-gray-400 hover:text-white hover:bg-github-700">🍴 Fork Sweeper</button></li>
+                            <li><button onclick="switchTool('renamer')" data-tool="renamer" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium text-gray-400 hover:text-white hover:bg-github-700">✏️ Repo Renamer</button></li>
+                            <li><button onclick="switchTool('tagger')" data-tool="tagger" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium text-gray-400 hover:text-white hover:bg-github-700">🏷️ Repo Tagger</button></li>
+                            <li><button onclick="switchTool('privacy')" data-tool="privacy" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium text-gray-400 hover:text-white hover:bg-github-700">🔒 Privacy Switcher</button></li>
+                            <li><button onclick="switchTool('desc-editor')" data-tool="desc-editor" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium text-gray-400 hover:text-white hover:bg-github-700">📝 Desc Editor</button></li>
+                            <li><button onclick="switchTool('readme-syncer')" data-tool="readme-syncer" class="tool-nav-btn w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium text-gray-400 hover:text-white hover:bg-github-700">📄 README Syncer</button></li>
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- Main Content -->
+                <div class="lg:col-span-3">
+                    <div class="bg-github-900 border border-github-700 rounded-xl overflow-hidden">
+                        <!-- Tool Content Areas -->
+                        <div id="tool-nuker" class="tool-content">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">
+                                    🔥 Repo Nuker
+                                </h3>
+                                <p class="text-gray-400">Permanently delete selected repositories. This action cannot be undone.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div id="nuker-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="nuker-count" class="text-sm text-gray-400">0 repositories selected</div>
+                                <button onclick="executeAction('nuker')" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Delete Selected
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Repo Archiver -->
+                        <div id="tool-archiver" class="tool-content hidden">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">📦 Repo Archiver</h3>
+                                <p class="text-gray-400">Archive or unarchive repositories to make them read-only.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div id="archiver-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="archiver-count" class="text-sm text-gray-400">0 repositories selected</div>
+                                <button onclick="executeAction('archiver')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Toggle Archive Status
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Star Sweeper -->
+                        <div id="tool-star-sweeper" class="tool-content hidden">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">🌟 Star Sweeper</h3>
+                                <p class="text-gray-400">View and unstar repositories you've previously starred.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div id="star-sweeper-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="star-sweeper-count" class="text-sm text-gray-400">0 repositories selected</div>
+                                <button onclick="executeAction('star-sweeper')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Unstar Selected
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Issue Wiper -->
+                        <div id="tool-issue-wiper" class="tool-content hidden">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">🐛 Issue Wiper</h3>
+                                <p class="text-gray-400">Bulk close issues across your repositories.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div id="issue-wiper-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="issue-wiper-count" class="text-sm text-gray-400">0 issues selected</div>
+                                <button onclick="executeAction('issue-wiper')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Close Selected Issues
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Fork Sweeper -->
+                        <div id="tool-fork-sweeper" class="tool-content hidden">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">🍴 Fork Sweeper</h3>
+                                <p class="text-gray-400">Delete forked repositories you no longer need.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div id="fork-sweeper-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="fork-sweeper-count" class="text-sm text-gray-400">0 forks selected</div>
+                                <button onclick="executeAction('fork-sweeper')" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Delete Selected Forks
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Repo Renamer -->
+                        <div id="tool-renamer" class="tool-content hidden">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">✏️ Repo Renamer</h3>
+                                <p class="text-gray-400">Rename repositories inline and save changes in bulk.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div id="renamer-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="renamer-count" class="text-sm text-gray-400">0 changes pending</div>
+                                <button onclick="executeAction('renamer')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Save Name Changes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Repo Tagger -->
+                        <div id="tool-tagger" class="tool-content hidden">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">🏷️ Repo Tagger</h3>
+                                <p class="text-gray-400">Edit repository topics and tags for better organization.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div id="tagger-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="tagger-count" class="text-sm text-gray-400">0 changes pending</div>
+                                <button onclick="executeAction('tagger')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Save Topic Changes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Privacy Switcher -->
+                        <div id="tool-privacy" class="tool-content hidden">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">🔒 Privacy Switcher</h3>
+                                <p class="text-gray-400">Change repository visibility between public and private.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div id="privacy-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="privacy-count" class="text-sm text-gray-400">0 repositories selected</div>
+                                <button onclick="executeAction('privacy')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Update Privacy Settings
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Desc Editor -->
+                        <div id="tool-desc-editor" class="tool-content hidden">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">📝 Description Editor</h3>
+                                <p class="text-gray-400">Edit repository descriptions and homepage URLs.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div id="desc-editor-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="desc-editor-count" class="text-sm text-gray-400">0 changes pending</div>
+                                <button onclick="executeAction('desc-editor')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Save Description Changes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- README Syncer -->
+                        <div id="tool-readme-syncer" class="tool-content hidden">
+                            <div class="p-6 border-b border-github-700 bg-github-800">
+                                <h3 class="text-xl font-semibold flex items-center gap-3 mb-2">📄 README Syncer</h3>
+                                <p class="text-gray-400">Push a README template to selected repositories.</p>
+                            </div>
+                            <div class="p-6 max-h-96 overflow-y-auto">
+                                <div class="mb-6">
+                                    <textarea id="readme-template" 
+                                              placeholder="Enter your README template here..." 
+                                              class="w-full h-32 p-3 bg-github-800 border border-github-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"></textarea>
+                                </div>
+                                <div id="readme-syncer-repos" class="space-y-3"></div>
+                            </div>
+                            <div class="p-6 border-t border-github-700 bg-github-800 flex justify-between items-center">
+                                <div id="readme-syncer-count" class="text-sm text-gray-400">0 repositories selected</div>
+                                <button onclick="executeAction('readme-syncer')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                    Sync README to Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 py-8 border-t border-github-800 text-center">
+            <div class="mb-4">
+                <p class="text-lg font-semibold mb-2">RepoKit — A side project by Drae</p>
+                <p class="text-gray-400">Built with vanilla HTML, CSS, and JavaScript</p>
+            </div>
+            <div class="flex justify-center items-center gap-6 flex-wrap">
+                <a href="https://github.com/09sychic" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
+                    🔗 GitHub
+                </a>
+                <span class="text-github-600">•</span>
+                <span class="text-gray-400">💬 Discord: @drae</span>
+                <span class="text-github-600">•</span>
+                <span class="text-gray-400">📖 MIT License</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let token = '';
+        let userData = null;
+        let repositories = [];
+        let currentTool = 'nuker';
+
+        // Token Management
+        async function connectToken() {
+            const tokenInput = document.getElementById('tokenInput');
+            token = tokenInput.value.trim();
+            
+            if (!token) {
+                showToast('Please enter a valid GitHub token', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                
+                // Validate token and get user info
+                const userResponse = await fetch('https://api.github.com/user', {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+
+                if (!userResponse.ok) {
+                    throw new Error('Invalid token or insufficient permissions');
+                }
+
+                userData = await userResponse.json();
+                showUserInfo();
+                
+                // Automatically load all repositories
+                await loadRepositories();
+                
+                // Switch to dashboard
+                document.getElementById('tokenSection').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                
+                showToast('Successfully connected and loaded repositories!', 'success');
+                
+            } catch (error) {
+                showToast(error.message, 'error');
+                token = '';
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function clearToken() {
+            token = '';
+            userData = null;
+            repositories = [];
+            document.getElementById('tokenInput').value = '';
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('tokenSection').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            showToast('Token cleared', 'info');
+        }
+
+        function showUserInfo() {
+            if (!userData) return;
+            
+            document.getElementById('userAvatar').src = userData.avatar_url;
+            document.getElementById('userName').textContent = userData.name || userData.login;
+            document.getElementById('userStats').textContent = `${userData.public_repos} public repos • ${userData.followers} followers`;
+            document.getElementById('userInfo').classList.remove('hidden');
+        }
+
+        // Repository Loading
+        async function loadRepositories() {
+            try {
+                const response = await fetch('https://api.github.com/user/repos?per_page=100&sort=updated', {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load repositories');
+                }
+
+                repositories = await response.json();
+                updateStats();
+                renderCurrentTool();
+                
+            } catch (error) {
+                showToast('Failed to load repositories: ' + error.message, 'error');
+            }
+        }
+
+        function updateStats() {
+            const total = repositories.length;
+            const publicCount = repositories.filter(repo => !repo.private).length;
+            const privateCount = repositories.filter(repo => repo.private).length;
+            
+            document.getElementById('totalRepos').textContent = total;
+            document.getElementById('publicRepos').textContent = publicCount;
+            document.getElementById('privateRepos').textContent = privateCount;
+        }
+
+        // Tool Management
+        function switchTool(toolName) {
+            // Update navigation
+            document.querySelectorAll('.tool-nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-github-700');
+            });
+            document.querySelector(`[data-tool="${toolName}"]`).classList.add('bg-blue-600', 'text-white');
+            document.querySelector(`[data-tool="${toolName}"]`).classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-github-700');
+            
+            // Update content
+            document.querySelectorAll('.tool-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`tool-${toolName}`).classList.remove('hidden');
+            
+            currentTool = toolName;
+            renderCurrentTool();
+        }
+
+        function renderCurrentTool() {
+            const container = document.getElementById(`${currentTool}-repos`);
+            container.innerHTML = '';
+            
+            repositories.forEach(repo => {
+                const item = createRepoItem(repo);
+                if (item) container.appendChild(item);
+            });
+            
+            updateSelectedCount();
+        }
+
+        function createRepoItem(repo) {
+            const item = document.createElement('div');
+            item.className = 'flex items-center gap-4 p-4 bg-github-800 border border-github-600 rounded-lg hover:bg-github-700 transition-colors duration-200';
+            item.dataset.repoId = repo.id;
+            item.dataset.repoName = repo.full_name;
+            
+            let controlsHTML = '';
+            let metaInfo = '';
+            
+            switch (currentTool) {
+                case 'nuker':
+                    controlsHTML = `<input type="checkbox" class="repo-checkbox w-4 h-4 text-blue-600 bg-github-700 border-github-500 rounded focus:ring-blue-500" onchange="updateSelectedCount()" />`;
+                    metaInfo = `⭐ ${repo.stargazers_count} • ${repo.private ? '🔒 Private' : '🌍 Public'} • Updated ${new Date(repo.updated_at).toLocaleDateString()}`;
+                    break;
+                    
+                case 'archiver':
+                    controlsHTML = `<input type="checkbox" class="repo-checkbox w-4 h-4 text-blue-600 bg-github-700 border-github-500 rounded focus:ring-blue-500" onchange="updateSelectedCount()" />`;
+                    metaInfo = `${repo.archived ? '📦 Archived' : '✅ Active'} • ⭐ ${repo.stargazers_count} • Updated ${new Date(repo.updated_at).toLocaleDateString()}`;
+                    break;
+                    
+                case 'star-sweeper':
+                    controlsHTML = `<input type="checkbox" class="repo-checkbox w-4 h-4 text-blue-600 bg-github-700 border-github-500 rounded focus:ring-blue-500" onchange="updateSelectedCount()" />`;
+                    metaInfo = `⭐ ${repo.stargazers_count} • ${repo.language || 'No language'} • ${repo.private ? '🔒 Private' : '🌍 Public'}`;
+                    break;
+                    
+                case 'issue-wiper':
+                    controlsHTML = `<input type="checkbox" class="repo-checkbox w-4 h-4 text-blue-600 bg-github-700 border-github-500 rounded focus:ring-blue-500" onchange="updateSelectedCount()" />`;
+                    metaInfo = `🐛 ${repo.open_issues_count || 0} open issues • ⭐ ${repo.stargazers_count}`;
+                    break;
+                    
+                case 'fork-sweeper':
+                    if (repo.fork) {
+                        controlsHTML = `<input type="checkbox" class="repo-checkbox w-4 h-4 text-blue-600 bg-github-700 border-github-500 rounded focus:ring-blue-500" onchange="updateSelectedCount()" />`;
+                        metaInfo = `🍴 Fork of ${repo.parent ? repo.parent.full_name : 'unknown'} • ⭐ ${repo.stargazers_count}`;
+                    } else {
+                        return null; // Skip non-forks
+                    }
+                    break;
+                    
+                case 'privacy':
+                    controlsHTML = `
+                        <select class="px-3 py-2 bg-github-700 border border-github-500 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" data-repo-id="${repo.id}" onchange="updateSelectedCount()">
+                            <option value="false" ${!repo.private ? 'selected' : ''}>🌍 Public</option>
+                            <option value="true" ${repo.private ? 'selected' : ''}>🔒 Private</option>
+                        </select>
+                    `;
+                    metaInfo = `Currently ${repo.private ? 'Private' : 'Public'} • ⭐ ${repo.stargazers_count}`;
+                    break;
+                    
+                case 'renamer':
+                    controlsHTML = `
+                        <input type="text" value="${repo.name}" 
+                               class="px-3 py-2 bg-github-700 border border-github-500 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-0 flex-1"
+                               data-repo-id="${repo.id}" data-original-name="${repo.name}"
+                               onchange="updateSelectedCount()" placeholder="Repository name" />
+                    `;
+                    metaInfo = `${repo.private ? '🔒 Private' : '🌍 Public'} • ⭐ ${repo.stargazers_count}`;
+                    break;
+                    
+                case 'tagger':
+                    const topics = repo.topics ? repo.topics.join(', ') : '';
+                    controlsHTML = `
+                        <input type="text" value="${topics}" 
+                               class="px-3 py-2 bg-github-700 border border-github-500 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-0 flex-1"
+                               data-repo-id="${repo.id}" data-original-topics="${topics}"
+                               onchange="updateSelectedCount()" placeholder="Enter topics separated by commas" />
+                    `;
+                    metaInfo = `${topics ? `🏷️ ${repo.topics.length} topics` : 'No topics'} • ⭐ ${repo.stargazers_count}`;
+                    break;
+                    
+                case 'desc-editor':
+                    controlsHTML = `
+                        <input type="text" value="${repo.description || ''}" 
+                               class="px-3 py-2 bg-github-700 border border-github-500 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-0 flex-1"
+                               data-repo-id="${repo.id}" data-original-desc="${repo.description || ''}"
+                               onchange="updateSelectedCount()" placeholder="Repository description" />
+                    `;
+                    metaInfo = `${repo.private ? '🔒 Private' : '🌍 Public'} • ⭐ ${repo.stargazers_count}`;
+                    break;
+                    
+                case 'readme-syncer':
+                    controlsHTML = `<input type="checkbox" class="repo-checkbox w-4 h-4 text-blue-600 bg-github-700 border-github-500 rounded focus:ring-blue-500" onchange="updateSelectedCount()" />`;
+                    metaInfo = `${repo.private ? '🔒 Private' : '🌍 Public'} • ⭐ ${repo.stargazers_count}`;
+                    break;
+            }
+            
+            if (controlsHTML === '') return null;
+            
+            item.innerHTML = `
+                <div class="flex-1 min-w-0">
+                    <div class="font-semibold text-white truncate">${repo.full_name}</div>
+                    <div class="text-sm text-gray-400">${metaInfo}</div>
+                    ${repo.description ? `<div class="text-sm text-gray-500 mt-1 truncate">${repo.description}</div>` : ''}
+                </div>
+                <div class="flex-shrink-0">
+                    ${controlsHTML}
+                </div>
+            `;
+            
+            return item;
+        }
+
+        function updateSelectedCount() {
+            let count = 0;
+            let label = '';
+            
+            switch (currentTool) {
+                case 'nuker':
+                case 'archiver':
+                case 'star-sweeper':
+                case 'issue-wiper':
+                case 'fork-sweeper':
+                case 'readme-syncer':
+                    count = document.querySelectorAll(`#${currentTool}-repos .repo-checkbox:checked`).length;
+                    label = `${count} repositories selected`;
+                    break;
+                    
+                case 'privacy':
+                    const selects = document.querySelectorAll(`#${currentTool}-repos select`);
+                    count = Array.from(selects).filter(select => {
+                        const repo = repositories.find(r => r.id == select.dataset.repoId);
+                        return repo && (select.value === 'true') !== repo.private;
+                    }).length;
+                    label = `${count} privacy changes pending`;
+                    break;
+                    
+                case 'renamer':
+                    const nameInputs = document.querySelectorAll(`#${currentTool}-repos input[type="text"]`);
+                    count = Array.from(nameInputs).filter(input => input.value !== input.dataset.originalName).length;
+                    label = `${count} name changes pending`;
+                    break;
+                    
+                case 'tagger':
+                    const topicInputs = document.querySelectorAll(`#${currentTool}-repos input[type="text"]`);
+                    count = Array.from(topicInputs).filter(input => input.value !== input.dataset.originalTopics).length;
+                    label = `${count} topic changes pending`;
+                    break;
+                    
+                case 'desc-editor':
+                    const descInputs = document.querySelectorAll(`#${currentTool}-repos input[type="text"]`);
+                    count = Array.from(descInputs).filter(input => input.value !== input.dataset.originalDesc).length;
+                    label = `${count} description changes pending`;
+                    break;
+            }
+            
+            document.getElementById(`${currentTool}-count`).textContent = label;
+        }
+
+        // Action Execution
+        async function executeAction(toolName) {
+            switch (toolName) {
+                case 'nuker':
+                    await executeNuker();
+                    break;
+                case 'archiver':
+                    await executeArchiver();
+                    break;
+                case 'star-sweeper':
+                    await executeStarSweeper();
+                    break;
+                case 'issue-wiper':
+                    await executeIssueWiper();
+                    break;
+                case 'fork-sweeper':
+                    await executeForkSweeper();
+                    break;
+                case 'privacy':
+                    await executePrivacy();
+                    break;
+                case 'renamer':
+                    await executeRenamer();
+                    break;
+                case 'tagger':
+                    await executeTagger();
+                    break;
+                case 'desc-editor':
+                    await executeDescEditor();
+                    break;
+                case 'readme-syncer':
+                    await executeReadmeSyncer();
+                    break;
+            }
+        }
+
+        async function executeNuker() {
+            const checkboxes = document.querySelectorAll('#nuker-repos .repo-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showToast('No repositories selected', 'error');
+                return;
+            }
+
+            if (!confirm(`⚠️ DANGER: You are about to permanently delete ${checkboxes.length} repositories.\n\nThis action CANNOT be undone. Type "DELETE" to confirm.`)) {
+                return;
+            }
+
+            const confirmation = prompt('Type "DELETE" to confirm deletion:');
+            if (confirmation !== 'DELETE') {
+                showToast('Deletion cancelled', 'info');
+                return;
+            }
+
+            showLoading(true);
+            let deleted = 0;
+
+            for (const checkbox of checkboxes) {
+                const repoName = checkbox.closest('[data-repo-name]').dataset.repoName;
+                try {
+                    await githubAPI(`/repos/${repoName}`, { method: 'DELETE' });
+                    checkbox.closest('.flex').remove();
+                    deleted++;
+                } catch (error) {
+                    showToast(`Failed to delete ${repoName}`, 'error');
+                }
+            }
+
+            showLoading(false);
+            showToast(`Successfully deleted ${deleted} repositories`, 'success');
+            await loadRepositories();
+        }
+
+        async function executeArchiver() {
+            const checkboxes = document.querySelectorAll('#archiver-repos .repo-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showToast('No repositories selected', 'error');
+                return;
+            }
+
+            showLoading(true);
+            let updated = 0;
+
+            for (const checkbox of checkboxes) {
+                const repoId = checkbox.closest('[data-repo-id]').dataset.repoId;
+                const repo = repositories.find(r => r.id == repoId);
+                const repoName = checkbox.closest('[data-repo-name]').dataset.repoName;
+                
+                try {
+                    await githubAPI(`/repos/${repoName}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ archived: !repo.archived })
+                    });
+                    updated++;
+                } catch (error) {
+                    showToast(`Failed to update ${repoName}`, 'error');
+                }
+            }
+
+            showLoading(false);
+            showToast(`Successfully updated ${updated} repositories`, 'success');
+            await loadRepositories();
+        }
+
+        async function executeStarSweeper() {
+            const checkboxes = document.querySelectorAll('#star-sweeper-repos .repo-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showToast('No repositories selected', 'error');
+                return;
+            }
+
+            showLoading(true);
+            let unstarred = 0;
+
+            for (const checkbox of checkboxes) {
+                const repoName = checkbox.closest('[data-repo-name]').dataset.repoName;
+                try {
+                    await githubAPI(`/user/starred/${repoName}`, { method: 'DELETE' });
+                    unstarred++;
+                } catch (error) {
+                    showToast(`Failed to unstar ${repoName}`, 'error');
+                }
+            }
+
+            showLoading(false);
+            showToast(`Successfully unstarred ${unstarred} repositories`, 'success');
+        }
+
+        async function executeIssueWiper() {
+            showToast('Issue Wiper functionality coming soon!', 'info');
+        }
+
+        async function executeForkSweeper() {
+            const checkboxes = document.querySelectorAll('#fork-sweeper-repos .repo-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showToast('No forks selected', 'error');
+                return;
+            }
+
+            if (!confirm(`⚠️ DANGER: You are about to permanently delete ${checkboxes.length} forked repositories.\n\nThis action CANNOT be undone.`)) {
+                return;
+            }
+
+            showLoading(true);
+            let deleted = 0;
+
+            for (const checkbox of checkboxes) {
+                const repoName = checkbox.closest('[data-repo-name]').dataset.repoName;
+                try {
+                    await githubAPI(`/repos/${repoName}`, { method: 'DELETE' });
+                    checkbox.closest('.flex').remove();
+                    deleted++;
+                } catch (error) {
+                    showToast(`Failed to delete ${repoName}`, 'error');
+                }
+            }
+
+            showLoading(false);
+            showToast(`Successfully deleted ${deleted} forks`, 'success');
+            await loadRepositories();
+        }
+
+        async function executePrivacy() {
+            const selects = document.querySelectorAll('#privacy-repos select');
+            const changes = Array.from(selects).filter(select => {
+                const repo = repositories.find(r => r.id == select.dataset.repoId);
+                return repo && (select.value === 'true') !== repo.private;
+            });
+
+            if (changes.length === 0) {
+                showToast('No privacy changes to apply', 'info');
+                return;
+            }
+
+            showLoading(true);
+            let updated = 0;
+
+            for (const select of changes) {
+                const repoId = select.dataset.repoId;
+                const repo = repositories.find(r => r.id == repoId);
+                const isPrivate = select.value === 'true';
+                
+                try {
+                    await githubAPI(`/repos/${repo.full_name}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ private: isPrivate })
+                    });
+                    updated++;
+                } catch (error) {
+                    showToast(`Failed to update ${repo.name}`, 'error');
+                }
+            }
+
+            showLoading(false);
+            showToast(`Successfully updated privacy for ${updated} repositories`, 'success');
+            await loadRepositories();
+        }
+
+        async function executeRenamer() {
+            const inputs = document.querySelectorAll('#renamer-repos input[type="text"]');
+            const changes = Array.from(inputs).filter(input => input.value !== input.dataset.originalName);
+
+            if (changes.length === 0) {
+                showToast('No name changes to apply', 'info');
+                return;
+            }
+
+            showLoading(true);
+            let updated = 0;
+
+            for (const input of changes) {
+                const repoId = input.dataset.repoId;
+                const repo = repositories.find(r => r.id == repoId);
+                const newName = input.value.trim();
+                
+                if (!newName) continue;
+                
+                try {
+                    await githubAPI(`/repos/${repo.full_name}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ name: newName })
+                    });
+                    updated++;
+                } catch (error) {
+                    showToast(`Failed to rename ${repo.name}`, 'error');
+                }
+            }
+
+            showLoading(false);
+            showToast(`Successfully renamed ${updated} repositories`, 'success');
+            await loadRepositories();
+        }
+
+        async function executeTagger() {
+            const inputs = document.querySelectorAll('#tagger-repos input[type="text"]');
+            const changes = Array.from(inputs).filter(input => input.value !== input.dataset.originalTopics);
+
+            if (changes.length === 0) {
+                showToast('No topic changes to apply', 'info');
+                return;
+            }
+
+            showLoading(true);
+            let updated = 0;
+
+            for (const input of changes) {
+                const repoId = input.dataset.repoId;
+                const repo = repositories.find(r => r.id == repoId);
+                const newTopics = input.value.split(',').map(t => t.trim()).filter(t => t);
+                
+                try {
+                    await githubAPI(`/repos/${repo.full_name}/topics`, {
+                        method: 'PUT',
+                        headers: { 'Accept': 'application/vnd.github.mercy-preview+json' },
+                        body: JSON.stringify({ names: newTopics })
+                    });
+                    updated++;
+                } catch (error) {
+                    showToast(`Failed to update topics for ${repo.name}`, 'error');
+                }
+            }
+
+            showLoading(false);
+            showToast(`Successfully updated topics for ${updated} repositories`, 'success');
+            await loadRepositories();
+        }
+
+        async function executeDescEditor() {
+            const inputs = document.querySelectorAll('#desc-editor-repos input[type="text"]');
+            const changes = Array.from(inputs).filter(input => input.value !== input.dataset.originalDesc);
+
+            if (changes.length === 0) {
+                showToast('No description changes to apply', 'info');
+                return;
+            }
+
+            showLoading(true);
+            let updated = 0;
+
+            for (const input of changes) {
+                const repoId = input.dataset.repoId;
+                const repo = repositories.find(r => r.id == repoId);
+                const newDesc = input.value.trim();
+                
+                try {
+                    await githubAPI(`/repos/${repo.full_name}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ description: newDesc })
+                    });
+                    updated++;
+                } catch (error) {
+                    showToast(`Failed to update description for ${repo.name}`, 'error');
+                }
+            }
+
+            showLoading(false);
+            showToast(`Successfully updated descriptions for ${updated} repositories`, 'success');
+            await loadRepositories();
+        }
+
+        async function executeReadmeSyncer() {
+            const checkboxes = document.querySelectorAll('#readme-syncer-repos .repo-checkbox:checked');
+            const template = document.getElementById('readme-template').value;
+
+            if (checkboxes.length === 0) {
+                showToast('No repositories selected', 'error');
+                return;
+            }
+
+            if (!template.trim()) {
+                showToast('Please enter a README template', 'error');
+                return;
+            }
+
+            showLoading(true);
+            let updated = 0;
+
+            for (const checkbox of checkboxes) {
+                const repoName = checkbox.closest('[data-repo-name]').dataset.repoName;
+                try {
+                    const content = btoa(template);
+                    await githubAPI(`/repos/${repoName}/contents/README.md`, {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            message: 'Update README.md via RepoKit',
+                            content: content
+                        })
+                    });
+                    updated++;
+                } catch (error) {
+                    showToast(`Failed to update README for ${repoName}`, 'error');
+                }
+            }
+
+            showLoading(false);
+            showToast(`Successfully synced README to ${updated} repositories`, 'success');
+        }
+
+        // Utility Functions
+        async function githubAPI(endpoint, options = {}) {
+            const response = await fetch(`https://api.github.com${endpoint}`, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status} ${response.statusText}`);
+            }
+
+            return response.status === 204 ? null : response.json();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 transform translate-x-full transition-transform duration-300 ${
+                type === 'success' ? 'bg-green-600' : 
+                type === 'error' ? 'bg-red-600' : 
+                'bg-blue-600'
+            }`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-x-full'), 100);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 4000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('tokenInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    connectToken();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
